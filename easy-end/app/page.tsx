@@ -1,40 +1,33 @@
-import { ChangeEvent, FormEvent, useState } from 'react';
+'use client';
+
+import { ChangeEvent, useState } from 'react';
 import styles from './page.module.css';
-import { PortfolioData } from '@/interfaces/interfaces';
+import { PortfolioResponse, ErrorResponse } from '@/interfaces/interfaces';
+import { handlePortfolioSubmit } from '../utils'; // Update the import path accordingly
 
 export default function Home() {
   const [address, setAddress] = useState<string>('');
-  const [portfolio, setPortfolio] = useState<PortfolioData | null>(null);
+  //MAybe remove error response from this type
+  const [portfolio, setPortfolio] = useState<
+    PortfolioResponse | ErrorResponse | null
+  >(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-
-  const handlePortfolioSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!address) return; // or any other address validation
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const response = await fetch(
-        `https://api.zerion.io/v1/wallets/${address}/portfolio`
-      );
-      if (!response.ok) {
-        throw new Error(`Error: ${response.statusText}`);
-      }
-      const data: PortfolioData = await response.json();
-      setPortfolio(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   return (
     <main className={styles.main}>
       <div>
-        <form onSubmit={handlePortfolioSubmit}>
+        <form
+          onSubmit={(event) =>
+            handlePortfolioSubmit(
+              event,
+              address,
+              setIsLoading,
+              setError,
+              setPortfolio
+            )
+          }
+        >
           <input
             type="text"
             value={address}
